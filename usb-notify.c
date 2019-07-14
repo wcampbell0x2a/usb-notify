@@ -55,13 +55,6 @@ int main()
 {
   signal(SIGINT, sig_handler);
 
-  /* Check for root */
-  //if (geteuid() != 0)
-  //{
-  //  printf("[!] usb-notify needs root permissions, exiting...\n");
-  //  return 1;
-  //}
-
   /* Create libnotify init */
   notify_init("usb-notify");
   NotifyNotification *n = NULL;
