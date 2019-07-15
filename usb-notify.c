@@ -43,16 +43,18 @@ int display_notification(struct udev_device* dev)
       const char* action = udev_device_get_action(dev);
       if (!strcmp(action, "bind"))
       {
-        const char *vendor  = udev_device_get_sysattr_value(dev, "idVendor");
-        const char *product = udev_device_get_sysattr_value(dev, "idProduct");
+        const char *product  = udev_device_get_sysattr_value(dev, "product");
+        const char *vid  = udev_device_get_sysattr_value(dev, "idVendor");
+        const char *pid = udev_device_get_sysattr_value(dev, "idProduct");
         const char *serial  = udev_device_get_sysattr_value(dev, "serial");
 
         char *message;
         if (0 > asprintf(&message,
+	        "Product : %s\n"
 	        "Serial #: %s\n"
-             "vid-pid: %s-%s\n"
-             "Action: %s\n",
-	        serial, vendor, product, action))
+            "Vid-Pid: %s-%s\n"
+            "Action: %s\n",
+	        product, serial, vid, pid, action))
         {
             printf("[!] Error allocating char\n");
         }
