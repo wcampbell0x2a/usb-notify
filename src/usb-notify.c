@@ -16,7 +16,10 @@
 //
 // Authors: Wayne Campbell <wcampbell1995@gmail.com>
 //
-#include "usb-notify.h"
+#include "../include/usb-notify.h"
+
+#include <libudev.h>
+#include <libnotify/notify.h>
 
 void sig_handler()
 {
@@ -38,23 +41,22 @@ int display_notification(struct udev_device* dev)
   {
     if (udev_device_get_devnode(dev))
     {
-
       /* Check if action is bind */
       const char* action = udev_device_get_action(dev);
       if (!strcmp(action, "bind"))
       {
         const char *product  = udev_device_get_sysattr_value(dev, "product");
-        const char *vid  = udev_device_get_sysattr_value(dev, "idVendor");
-        const char *pid = udev_device_get_sysattr_value(dev, "idProduct");
-        const char *serial  = udev_device_get_sysattr_value(dev, "serial");
+        const char *vid      = udev_device_get_sysattr_value(dev, "idVendor");
+        const char *pid      = udev_device_get_sysattr_value(dev, "idProduct");
+        const char *serial   = udev_device_get_sysattr_value(dev, "serial");
 
         char *message;
         if (0 > asprintf(&message,
-	        "Product : %s\n"
-	        "Serial #: %s\n"
+            "Product : %s\n"
+            "Serial #: %s\n"
             "Vid-Pid: %s-%s\n"
             "Action: %s\n",
-	        product, serial, vid, pid, action))
+            product, serial, vid, pid, action))
         {
             printf("[!] Error allocating char\n");
         }
