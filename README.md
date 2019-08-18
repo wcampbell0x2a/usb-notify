@@ -10,3 +10,6 @@ It then uses the libnotify framework to display a message to the current user.
 
 ## Building
 You will need libudev and libnotify for this application to build.
+
+## Usage
+`$ usb-notify &` in your startup script (~/.xinitrc)

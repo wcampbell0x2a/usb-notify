@@ -17,4 +17,4 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(deps REQUIRED IMPORTED_TARGET libnotify libudev)
 target_link_libraries(usb-notify PkgConfig::deps)
 
-
+install(TARGETS usb-notify DESTINATION /usr/local/bin)
