@@ -43,7 +43,7 @@ int display_notification(struct udev_device* dev)
     {
       /* Check if action is bind */
       const char* action = udev_device_get_action(dev);
-      if (!strcmp(action, "bind"))
+      if (!strcmp(action, "add"))
       {
         const char *product  = udev_device_get_sysattr_value(dev, "product");
         const char *vid      = udev_device_get_sysattr_value(dev, "idVendor");
