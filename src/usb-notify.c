@@ -16,10 +16,12 @@
 //
 // Authors: Wayne Campbell <wcampbell1995@gmail.com>
 //
+#define _GNU_SOURCE
 #include "../include/usb-notify.h"
 
 #include <libudev.h>
 #include <libnotify/notify.h>
+#include <stdio.h>
 
 void sig_handler()
 {
@@ -54,9 +56,8 @@ int display_notification(struct udev_device* dev)
         if (0 > asprintf(&message,
             "Product : %s\n"
             "Serial #: %s\n"
-            "Vid-Pid: %s-%s\n"
-            "Action: %s\n",
-            product, serial, vid, pid, action))
+            "Vid-Pid: %s-%s\n",
+            product, serial, vid, pid))
         {
             printf("[!] Error allocating char\n");
         }
@@ -77,7 +78,6 @@ int display_notification(struct udev_device* dev)
 
 void monitor_devices(struct udev* udev)
 {
-
   struct udev_monitor* mon = udev_monitor_new_from_netlink(udev, "udev");
 
   udev_monitor_filter_add_match_subsystem_devtype(mon, "usb", NULL);
@@ -112,8 +112,6 @@ int main()
 
   /* Create libnotify init */
   notify_init("usb-notify");
-  NotifyNotification *n = NULL;
-  char *message;
 
   /* udev init */
   struct udev *udev;
