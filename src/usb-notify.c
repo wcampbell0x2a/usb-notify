@@ -56,12 +56,14 @@ int display_notification(struct udev_device* dev)
         if (0 > asprintf(&message,
             "Product : %s\n"
             "Serial #: %s\n"
-            "Vid-Pid: %s-%s\n",
+            "Vid-Pid: %s-%s",
             product, serial, vid, pid))
         {
             printf("[!] Error allocating char\n");
         }
         printf("[#] Displaying message: \n%s\n", message);
+
+        /* Display notification */
         NotifyNotification * n_usb = notify_notification_new("usb-notify", message, "dialog-information");
         notify_notification_show(n_usb, NULL);
         g_object_unref(G_OBJECT(n_usb));
