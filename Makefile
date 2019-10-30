@@ -27,3 +27,5 @@ clean:
 
 install:
 		 install -m 755 ./bin/usb-notify /usr/local/bin/usb-notify
+		 mkdir -p /var/log/usb-notify
+		 install -m 766 /dev/null /var/log/usb-notify/usb-notify.log

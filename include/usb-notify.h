@@ -18,4 +18,5 @@
 //
 #ifndef USB_NOTIFY_H
 #define USB_NOTIFY_H
+#define LOG_FILE "/var/log/usb-notify/usb-notify.log"
 #endif

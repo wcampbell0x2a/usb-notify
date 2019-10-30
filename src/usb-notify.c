@@ -28,16 +28,82 @@ void sig_handler()
     printf("[#] received signal, exiting...\n");
 }
 
-/*
- * Display Notification
+/**
+ * @brief log device event in log file
  *
- * Display notification of the device informatino if the device is of the
- * 'bind' udev action.
+ * @param udev_device struct from udev
+ * @return void
+ */
+void log_device(struct udev_device *dev)
+{
+    /* Open log files */
+    FILE *fp;
+    fp = fopen(LOG_FILE, "a");
+
+    /* generate string */
+    const char *action  = udev_device_get_action(dev);
+    const char *product = udev_device_get_sysattr_value(dev, "product");
+    const char *vid     = udev_device_get_sysattr_value(dev, "idVendor");
+    const char *pid     = udev_device_get_sysattr_value(dev, "idProduct");
+    const char *serial  = udev_device_get_sysattr_value(dev, "serial");
+
+    // TODO add unixtime
+    char *message;
+    if (0 > asprintf(&message,
+                     "TIME: "
+                     "action: %s, "
+                     "product: %s, "
+                     "serial: %s, "
+                     "vid-pid: %s-%s",
+                     action, product, serial, vid, pid))
+    {
+        printf("[!] Error allocating char\n");
+    }
+
+    /* append to log file */
+    fprintf(fp, "%s\n", message);
+    fclose(fp);
+    free(message);
+}
+
+/**
+ * @brief display libnotify notification
  *
- * @param dev, udev_device from udev
+ * @param udev_device struct from udev
+ * @return void
+ */
+void display_notification(struct udev_device *dev)
+{
+    const char *product = udev_device_get_sysattr_value(dev, "product");
+    const char *vid     = udev_device_get_sysattr_value(dev, "idVendor");
+    const char *pid     = udev_device_get_sysattr_value(dev, "idProduct");
+    const char *serial  = udev_device_get_sysattr_value(dev, "serial");
+    char *message;
+    if (0 > asprintf(&message,
+                     "product: %s\n"
+                     "serial: %s\n"
+                     "vid-pid: %s-%s",
+                     product, serial, vid, pid))
+    {
+        printf("[!] Error allocating char\n");
+    }
+    printf("[#] Displaying message: \n%s\n", message);
+
+    /* Display notification */
+    NotifyNotification *n_usb = notify_notification_new("usb-notify", message,
+                                                        "dialog-information");
+    notify_notification_show(n_usb, NULL);
+    g_object_unref(G_OBJECT(n_usb));
+    free(message);
+}
+
+/**
+ * @brief display message if add event, print to log if any usb event
+ *
+ * @param dev udev_device from found udev
  * @return int of success
  */
-int display_notification(struct udev_device *dev)
+int handle_uevent(struct udev_device *dev)
 {
     if (dev)
     {
@@ -45,41 +111,28 @@ int display_notification(struct udev_device *dev)
         {
             /* Check if action is bind */
             const char *action = udev_device_get_action(dev);
+
             if (!strcmp(action, "add"))
             {
-                const char *product = udev_device_get_sysattr_value(dev,
-                                                                    "product");
-                const char *vid = udev_device_get_sysattr_value(dev, "idVendor");
-                const char *pid = udev_device_get_sysattr_value(dev, "idProduct");
-                const char *serial = udev_device_get_sysattr_value(dev, "serial");
-
-                char *message;
-                if (0 > asprintf(&message,
-                                 "Product : %s\n"
-                                 "Serial #: %s\n"
-                                 "Vid-Pid: %s-%s",
-                                 product, serial, vid, pid))
-                {
-                    printf("[!] Error allocating char\n");
-                }
-                printf("[#] Displaying message: \n%s\n", message);
-
-                /* Display notification */
-                NotifyNotification *n_usb = notify_notification_new(
-                        "usb-notify", message, "dialog-information");
-                notify_notification_show(n_usb, NULL);
-                g_object_unref(G_OBJECT(n_usb));
+                display_notification(dev);
+                log_device(dev);
             }
+            /* TODO device remove details log */
             else
             {
                 return 1;
             }
         }
     }
-    udev_device_unref(dev);
     return 0;
 }
 
+/**
+ * @brief monitor the udev namespace for new usb events
+ *
+ * @param udev struct
+ * @return void
+ */
 void monitor_devices(struct udev *udev)
 {
     struct udev_monitor *mon = udev_monitor_new_from_netlink(udev, "udev");
@@ -106,9 +159,11 @@ void monitor_devices(struct udev *udev)
         {
             /* Get pointer from device found */
             struct udev_device *dev = udev_monitor_receive_device(mon);
-            display_notification(dev);
+            handle_uevent(dev);
+            udev_device_unref(dev);
         }
     }
+    udev_monitor_unref(mon);
 }
 
 int main()
@@ -133,7 +188,8 @@ int main()
     /* startup monitor loop */
     monitor_devices(udev);
 
-    /* cleanup libnotify */
+    /* cleanup */
+    udev_unref(udev);
     notify_uninit();
     return 0;
 }

@@ -10,6 +10,9 @@ It then uses the libnotify framework to display a message to the current user.
 
 ## Building
 You will need libudev and libnotify for this application to build.
+`make && sudo make install`
 
 ## Usage
 `$ usb-notify &` in your startup script (~/.xinitrc)
+
+To view the usb-notify logs: `less /var/log/usb-notify/usb-notify.log`
