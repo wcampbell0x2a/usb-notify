@@ -10,15 +10,16 @@ CFLAGS = -ansi \
 		 -Wextra \
 		 -Wall \
 		 `pkg-config --cflags --libs libnotify`
-
 LIBS     =  -ludev
 
+DEPENDS  := include/usb-notify.h
 SRC_MAIN := src/usb-notify.o
-SRC      :=
 
 all: usb-notify
 
-usb-notify: $(SRC_MAIN) $(SRC)
+$(SRC_MAIN): $(DEPENDS)
+
+usb-notify: $(SRC_MAIN)
 		 $(CC) $(CFLAGS) -o $(BIN)/$(PROJECT) $^ $(LIBS)
 
 clean:
